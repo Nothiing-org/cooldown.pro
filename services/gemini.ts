@@ -3,12 +3,21 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { AIThemeSuggestion } from "../types";
 
 export const generateThemeFromVibe = async (vibe: string): Promise<AIThemeSuggestion> => {
-  // Ensure we safely access the key only when the function is called
-  const apiKey = typeof process !== 'undefined' ? process.env.API_KEY : '';
+  // Use a safer check for process to prevent crashing on Netlify/Browser environments
+  let apiKey = '';
+  try {
+    apiKey = (window as any).process?.env?.API_KEY || (import.meta as any).env?.VITE_API_KEY || '';
+    // If the environment variable is injected by the platform directly into process.env
+    if (!apiKey && typeof process !== 'undefined') {
+      apiKey = process.env.API_KEY || '';
+    }
+  } catch (e) {
+    console.warn("Could not access environment variables via standard methods.");
+  }
   
   if (!apiKey) {
-    console.error("API_KEY is not defined in the environment.");
-    throw new Error("Missing API Key configuration.");
+    console.error("API_KEY is not defined. Ensure it is set in your Netlify Environment Variables.");
+    throw new Error("Missing API Key. Check the browser console for details.");
   }
 
   const ai = new GoogleGenAI({ apiKey });

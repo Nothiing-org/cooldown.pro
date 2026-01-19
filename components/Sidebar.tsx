@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Play, 
   Download, 
@@ -18,9 +18,12 @@ import {
   Percent,
   Settings2,
   Sun,
-  Moon
+  Moon,
+  Sparkles,
+  Loader2
 } from 'lucide-react';
 import { AppState, FontOption, VisualConfig, SequenceConfig, VisibilityConfig, ElementTransform, ExportSettings } from '../types';
+import { generateThemeFromVibe } from '../services/gemini';
 
 interface SidebarProps {
   state: AppState;
@@ -67,6 +70,30 @@ const Sidebar: React.FC<SidebarProps> = ({
   const selected = state.selectedElement;
   const currentTransform = selected ? state.transforms[selected] : null;
   const isDark = state.visuals.theme === 'dark';
+  
+  const [vibeInput, setVibeInput] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const handleAIGenerate = async () => {
+    if (!vibeInput.trim() || isGenerating) return;
+    setIsGenerating(true);
+    try {
+      const suggestion = await generateThemeFromVibe(vibeInput);
+      onUpdateVisuals({
+        accentColor: suggestion.accentColor,
+        ringColor: suggestion.accentColor,
+        font: suggestion.font,
+        backgroundStyle: suggestion.backgroundStyle,
+        motivationalText: suggestion.motivationalText
+      });
+      setVibeInput('');
+    } catch (err) {
+      console.error(err);
+      alert("AI Generation failed. Check console for details.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const handleAlign = (axis: 'h' | 'v', alignment: 'start' | 'center' | 'end') => {
     if (!selected || !currentTransform) return;
@@ -118,6 +145,34 @@ const Sidebar: React.FC<SidebarProps> = ({
             </button>
           </div>
         </div>
+
+        {/* AI Vibe Section */}
+        <section className="space-y-6">
+          <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.4em]">Intelligence Engine</label>
+          <div className="bg-gradient-to-br from-indigo-50 to-white dark:from-[#0D0D0D] dark:to-black border border-indigo-100 dark:border-[#1A1A1A] rounded-[40px] p-8 shadow-sm space-y-6">
+            <div className="space-y-4">
+              <label className="text-[11px] font-bold text-indigo-400 dark:text-zinc-400 uppercase tracking-widest flex items-center gap-2">
+                <Sparkles size={14} /> Style by Vibe
+              </label>
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  value={vibeInput}
+                  onChange={(e) => setVibeInput(e.target.value)}
+                  placeholder="e.g. 'Cyberpunk 2077' or 'Cozy Minimalist'"
+                  className="flex-1 h-[56px] bg-white dark:bg-[#1A1A1A] border border-indigo-50 dark:border-[#262626] rounded-2xl px-5 text-sm outline-none focus:border-indigo-400 dark:focus:border-white transition-all dark:text-white placeholder:text-zinc-300"
+                />
+                <button 
+                  onClick={handleAIGenerate}
+                  disabled={isGenerating || !vibeInput.trim()}
+                  className="h-[56px] w-[56px] flex items-center justify-center bg-black dark:bg-white rounded-2xl active:scale-90 transition-all disabled:opacity-30"
+                >
+                  {isGenerating ? <Loader2 size={20} className="animate-spin text-white dark:text-black" /> : <Sparkles size={20} className="text-white dark:text-black" />}
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* Configuration Sections */}
         <section className="space-y-6">
