@@ -3,24 +3,31 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>llumina | motion</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Bebas+Neue&family=Roboto+Mono:wght@500&family=Oswald:wght@700&family=Montserrat:wght@900&display=swap" rel="stylesheet">
     <style>
+      :root {
+        --llumina-white: #FFFFFF;
+        --llumina-black: #000000;
+        --llumina-gray: #F0F0F0;
+        --llumina-zinc: #71717A;
+      }
       body {
         margin: 0;
         padding: 0;
-        background-color: #FFFFFF;
-        color: #000000;
+        background-color: var(--llumina-white);
+        color: var(--llumina-black);
         font-family: 'Plus Jakarta Sans', sans-serif;
         overflow: hidden;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .momentum-scroll {
+        -webkit-overflow-scrolling: touch;
       }
       ::-webkit-scrollbar {
-        width: 5px;
-      }
-      ::-webkit-scrollbar-track {
-        background: transparent;
+        width: 4px;
       }
       ::-webkit-scrollbar-thumb {
         background: rgba(0, 0, 0, 0.1);
@@ -33,25 +40,30 @@
         from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
       }
+      /* Mobile Ergonomics */
+      input, select, button {
+        font-size: 16px !important; /* Prevent iOS zoom */
+      }
       input[type="range"] {
         -webkit-appearance: none;
         background: transparent;
+        height: 56px;
       }
       input[type="range"]::-webkit-slider-thumb {
         -webkit-appearance: none;
-        height: 18px;
-        width: 18px;
+        height: 24px;
+        width: 24px;
         border-radius: 50%;
-        background: #000000;
+        background: var(--llumina-black);
         cursor: pointer;
-        margin-top: -7px;
+        margin-top: -10px;
         border: 2px solid #fff;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       }
       input[type="range"]::-webkit-slider-runnable-track {
         width: 100%;
         height: 4px;
-        background: #f0f0f0;
+        background: var(--llumina-gray);
         border-radius: 2px;
       }
     </style>

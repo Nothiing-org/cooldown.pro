@@ -3,7 +3,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import PreviewStage from './components/PreviewStage';
 import { AppState, ElementTransform, ExportSettings } from './types';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Dot } from 'lucide-react';
 
 const HISTORY_LIMIT = 50;
 
@@ -68,28 +68,23 @@ const App: React.FC = () => {
   const audioCtx = useRef<AudioContext | null>(null);
 
   const pushHistory = useCallback((newState: AppState) => {
-    setPast(prev => {
-      const updated = [...prev, state].slice(-HISTORY_LIMIT);
-      return updated;
-    });
+    setPast(prev => [...prev, state].slice(-HISTORY_LIMIT));
     setFuture([]);
   }, [state]);
 
   const undo = useCallback(() => {
     if (past.length === 0) return;
     const previous = past[past.length - 1];
-    const newPast = past.slice(0, past.length - 1);
     setFuture(prev => [state, ...prev]);
-    setPast(newPast);
+    setPast(past.slice(0, past.length - 1));
     setState(previous);
   }, [past, state]);
 
   const redo = useCallback(() => {
     if (future.length === 0) return;
     const next = future[0];
-    const newFuture = future.slice(1);
     setPast(prev => [...prev, state]);
-    setFuture(newFuture);
+    setFuture(future.slice(1));
     setState(next);
   }, [future, state]);
 
@@ -157,24 +152,21 @@ const App: React.FC = () => {
 
   const handleExport = async () => {
     const { format, resolution, fps } = state.exportSettings;
-    
-    if (format === 'png') {
-      await runSequence(true);
-      const target = document.getElementById('export-target');
-      if (target) {
-        // @ts-ignore
-        const canvas = await html2canvas(target, { backgroundColor: '#000', scale: resolution === '4k' ? 4 : resolution === '1080p' ? 2 : 1.3 });
-        const link = document.createElement('a');
-        link.download = `llumina-frame-${Date.now()}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-      }
-      return;
-    }
-
     setState(s => ({ ...s, isExporting: true }));
     const target = document.getElementById('export-target');
     if (!target) return;
+
+    if (format === 'png') {
+      await runSequence(true);
+      // @ts-ignore
+      const canvas = await html2canvas(target, { backgroundColor: '#000', scale: 2 });
+      const link = document.createElement('a');
+      link.download = `llumina-frame-${Date.now()}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      setState(s => ({ ...s, isExporting: false }));
+      return;
+    }
 
     const canvasEl = document.createElement('canvas');
     const ctx = canvasEl.getContext('2d');
@@ -201,17 +193,11 @@ const App: React.FC = () => {
     };
 
     recorder.start();
-
     let isRecording = true;
     const captureFrame = async () => {
       if (!isRecording) return;
       // @ts-ignore
-      const snap = await html2canvas(target, { 
-        backgroundColor: '#000', 
-        scale: resScale,
-        logging: false,
-        useCORS: true
-      });
+      const snap = await html2canvas(target, { backgroundColor: '#000', scale: resScale, logging: false, useCORS: true });
       if (ctx) {
         ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
         ctx.drawImage(snap, 0, 0);
@@ -221,11 +207,7 @@ const App: React.FC = () => {
 
     captureFrame();
     await runSequence(true);
-    
-    setTimeout(() => {
-      isRecording = false;
-      recorder.stop();
-    }, 500);
+    setTimeout(() => { isRecording = false; recorder.stop(); }, 500);
   };
 
   const updateTransform = (id: 'ring' | 'countdown' | 'status' | 'custom' | 'percentage', updates: Partial<ElementTransform>) => {
@@ -234,35 +216,31 @@ const App: React.FC = () => {
     setState(nextState);
   };
 
-  const wrapUpdate = (updater: (s: AppState) => AppState) => {
-    const nextState = updater(state);
-    pushHistory(nextState);
-    setState(nextState);
-  };
-
   return (
-    <div className="flex flex-col lg:flex-row h-screen w-screen overflow-hidden bg-white text-black relative">
-      <div className="lg:hidden flex items-center justify-between p-4 bg-white border-b border-zinc-100 z-50">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 bg-black rounded-full" />
-          <span className="font-bold text-sm tracking-tight">llumina</span>
+    <div className="flex flex-col lg:flex-row min-h-[100dvh] w-screen overflow-hidden bg-white text-black relative">
+      {/* Mobile Top Bar - Thumb Friendly Trigger */}
+      <div className="lg:hidden flex items-center justify-between px-6 h-20 bg-white border-b border-[#F0F0F0] z-50">
+        <div className="flex items-center">
+          <div className="w-2.5 h-2.5 bg-black rounded-full mr-2" />
+          <span className="font-bold text-lg tracking-tighter">llumina</span>
         </div>
         <button 
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="p-2 bg-zinc-50 rounded-xl hover:bg-zinc-100 transition-colors"
+          className="h-12 w-12 flex items-center justify-center bg-[#F8F8F8] rounded-2xl active:scale-95 transition-all"
         >
           {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
 
-      <div className={`fixed inset-0 lg:relative lg:inset-auto z-40 transform transition-transform duration-300 lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      {/* Sidebar - Desktop fixed / Mobile slide-over */}
+      <div className={`fixed inset-0 lg:relative lg:inset-auto z-40 transform transition-transform duration-500 lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <Sidebar 
           state={state} 
-          onUpdateVisuals={(u) => wrapUpdate(s => ({ ...s, visuals: { ...s.visuals, ...u } }))}
-          onUpdateSequence={(u) => wrapUpdate(s => ({ ...s, sequence: { ...s.sequence, ...u }, currentCount: u.start ?? s.currentCount }))}
-          onUpdateVisibility={(u) => wrapUpdate(s => ({ ...s, visibility: { ...s.visibility, ...u } }))}
-          onUpdateCanvas={(u) => wrapUpdate(s => ({ ...s, canvas: { ...s.canvas, ...u } }))}
-          onUpdateExportSettings={(u) => wrapUpdate(s => ({ ...s, exportSettings: { ...s.exportSettings, ...u } }))}
+          onUpdateVisuals={(u) => setState(s => ({ ...s, visuals: { ...s.visuals, ...u } }))}
+          onUpdateSequence={(u) => setState(s => ({ ...s, sequence: { ...s.sequence, ...u } }))}
+          onUpdateVisibility={(u) => setState(s => ({ ...s, visibility: { ...s.visibility, ...u } }))}
+          onUpdateCanvas={(u) => setState(s => ({ ...s, canvas: { ...s.canvas, ...u } }))}
+          onUpdateExportSettings={(u) => setState(s => ({ ...s, exportSettings: { ...s.exportSettings, ...u } }))}
           onUpdateTransform={updateTransform}
           onSelectElement={(id) => setState(s => ({ ...s, selectedElement: id }))}
           onPreview={() => runSequence(false)}
@@ -272,8 +250,14 @@ const App: React.FC = () => {
           onUndo={undo}
           onRedo={redo}
         />
+        <div 
+          onClick={() => setIsSidebarOpen(false)}
+          className="lg:hidden absolute inset-0 bg-black/5 backdrop-blur-sm -z-10 pointer-events-auto"
+          style={{ width: '100vw', transform: 'translateX(420px)' }}
+        />
       </div>
 
+      {/* Main Preview */}
       <main className="flex-1 relative bg-[#FAFAFA] overflow-hidden">
         <PreviewStage state={state} onSelectElement={(id) => setState(s => ({ ...s, selectedElement: id }))} />
       </main>
