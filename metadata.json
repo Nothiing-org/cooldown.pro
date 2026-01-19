@@ -1,0 +1,8 @@
+{
+  "name": "Cooldown Pro - Motion Generator",
+  "description": "A high-end countdown motion graphics generator with dynamic animations and video export capabilities.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
