@@ -8,9 +8,10 @@ interface PreviewStageProps {
 }
 
 const PreviewStage: React.FC<PreviewStageProps> = ({ state, onSelectElement }) => {
-  const { accentColor, ringColor, font, glow, backgroundStyle, motivationalText, startText, endText, customText, ringThickness } = state.visuals;
+  const { accentColor, ringColor, font, glow, backgroundStyle, motivationalText, startText, endText, customText, ringThickness, theme } = state.visuals;
   const { showRing, showCountdown, showStatus, showCustom, showPercentage } = state.visibility;
   const { transforms, canvas, selectedElement, progress } = state;
+  const isDarkTheme = theme === 'dark';
   
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
@@ -97,9 +98,9 @@ const PreviewStage: React.FC<PreviewStageProps> = ({ state, onSelectElement }) =
   };
 
   return (
-    <div ref={containerRef} className="w-full h-full flex flex-col items-center justify-center bg-[#FAFAFA] relative llumina-reveal">
+    <div ref={containerRef} className="w-full h-full flex flex-col items-center justify-center bg-[#FAFAFA] dark:bg-[#0A0A0A] relative llumina-reveal transition-colors duration-500">
       <div className="absolute top-10 left-10 flex flex-col gap-2 z-10">
-        <div className="bg-white/80 px-4 py-2 rounded-full border border-zinc-100 shadow-sm backdrop-blur-md text-[10px] font-black text-black uppercase tracking-[0.4em]">{canvas.aspectRatio} Aspect</div>
+        <div className="bg-white/80 dark:bg-black/80 px-4 py-2 rounded-full border border-zinc-100 dark:border-zinc-800 shadow-sm backdrop-blur-md text-[10px] font-black text-black dark:text-white uppercase tracking-[0.4em] transition-all">{canvas.aspectRatio} Aspect</div>
         <div className="px-4 text-[9px] font-bold text-zinc-400 uppercase tracking-widest">llumina Studio 2026</div>
       </div>
 
@@ -109,7 +110,7 @@ const PreviewStage: React.FC<PreviewStageProps> = ({ state, onSelectElement }) =
           transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
           transformOrigin: 'center center'
         }}
-        className="relative shadow-[0_40px_100px_rgba(0,0,0,0.15)] rounded-[4px] overflow-hidden"
+        className="relative shadow-[0_40px_100px_rgba(0,0,0,0.15)] dark:shadow-[0_40px_100px_rgba(0,0,0,0.6)] rounded-[4px] overflow-hidden"
       >
         <div 
           id="export-target"
@@ -239,9 +240,9 @@ const PreviewStage: React.FC<PreviewStageProps> = ({ state, onSelectElement }) =
         </div>
       </div>
       
-      <div className={`fixed bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-white px-8 py-5 rounded-[24px] border border-zinc-100 shadow-2xl transition-all duration-700 z-50 ${state.isExporting ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
-        <div className="w-2.5 h-2.5 bg-black rounded-full animate-pulse" />
-        <span className="text-[11px] font-black text-black uppercase tracking-[0.4em]">Signal Extraction...</span>
+      <div className={`fixed bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-white dark:bg-black px-8 py-5 rounded-[24px] border border-zinc-100 dark:border-zinc-800 shadow-2xl transition-all duration-700 z-50 ${state.isExporting ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
+        <div className="w-2.5 h-2.5 bg-black dark:bg-white rounded-full animate-pulse" />
+        <span className="text-[11px] font-black text-black dark:text-white uppercase tracking-[0.4em]">Signal Extraction...</span>
       </div>
     </div>
   );

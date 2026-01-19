@@ -17,10 +17,8 @@ import {
   ALargeSmall,
   Percent,
   Settings2,
-  Video,
-  Monitor,
-  Activity,
-  Droplet
+  Sun,
+  Moon
 } from 'lucide-react';
 import { AppState, FontOption, VisualConfig, SequenceConfig, VisibilityConfig, ElementTransform, ExportSettings } from '../types';
 
@@ -68,6 +66,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const selected = state.selectedElement;
   const currentTransform = selected ? state.transforms[selected] : null;
+  const isDark = state.visuals.theme === 'dark';
 
   const handleAlign = (axis: 'h' | 'v', alignment: 'start' | 'center' | 'end') => {
     if (!selected || !currentTransform) return;
@@ -97,25 +96,33 @@ const Sidebar: React.FC<SidebarProps> = ({
   };
 
   return (
-    <aside className="w-full lg:w-[420px] h-full bg-white lg:border-r border-[#F0F0F0] flex flex-col z-30 llumina-reveal overflow-hidden">
+    <aside className="w-full lg:w-[420px] h-full bg-white dark:bg-black lg:border-r border-[#F0F0F0] dark:border-[#1A1A1A] flex flex-col z-30 llumina-reveal overflow-hidden transition-colors duration-500">
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto momentum-scroll p-6 lg:p-8 space-y-10 pb-40">
-        {/* Desktop Header Only */}
-        <div className="hidden lg:flex items-center justify-between">
+      <div className="flex-1 overflow-y-auto momentum-scroll p-6 lg:p-8 space-y-10 pb-40 no-scrollbar">
+        {/* Header with Undo/Redo & Theme Toggle */}
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 bg-black rounded-full" />
-            <span className="font-bold text-xl tracking-tighter">llumina</span>
+            <div className="w-2.5 h-2.5 bg-black dark:bg-white rounded-full" />
+            <span className="font-bold text-xl tracking-tighter dark:text-white">llumina</span>
           </div>
-          <div className="flex items-center gap-1 bg-[#F8F8F8] p-1.5 rounded-2xl">
-            <button onClick={onUndo} disabled={!canUndo} className={`p-2.5 rounded-xl transition-all active:scale-95 ${canUndo ? 'text-black hover:bg-white' : 'text-zinc-300'}`}><Undo2 size={18} /></button>
-            <button onClick={onRedo} disabled={!canRedo} className={`p-2.5 rounded-xl transition-all active:scale-95 ${canRedo ? 'text-black hover:bg-white' : 'text-zinc-300'}`}><Redo2 size={18} /></button>
+          <div className="flex items-center gap-3">
+             <div className="flex items-center gap-1 bg-[#F8F8F8] dark:bg-[#1A1A1A] p-1.5 rounded-2xl">
+              <button onClick={onUndo} disabled={!canUndo} className={`p-2.5 rounded-xl transition-all active:scale-95 ${canUndo ? 'text-black dark:text-white hover:bg-white dark:hover:bg-black' : 'text-zinc-300 dark:text-zinc-700'}`}><Undo2 size={18} /></button>
+              <button onClick={onRedo} disabled={!canRedo} className={`p-2.5 rounded-xl transition-all active:scale-95 ${canRedo ? 'text-black dark:text-white hover:bg-white dark:hover:bg-black' : 'text-zinc-300 dark:text-zinc-700'}`}><Redo2 size={18} /></button>
+            </div>
+            <button 
+              onClick={() => onUpdateVisuals({ theme: isDark ? 'light' : 'dark' })}
+              className="h-12 w-12 flex items-center justify-center bg-[#F8F8F8] dark:bg-[#1A1A1A] rounded-2xl active:scale-90 transition-all border border-[#F0F0F0] dark:border-[#262626]"
+            >
+              {isDark ? <Sun size={18} className="text-white" /> : <Moon size={18} className="text-black" />}
+            </button>
           </div>
         </div>
 
         {/* Configuration Sections */}
         <section className="space-y-6">
           <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.4em]">Signal Configuration</label>
-          <div className="bg-white border border-[#F0F0F0] rounded-[40px] p-8 shadow-[0_20px_50px_rgba(0,0,0,0.03)] space-y-10">
+          <div className="bg-white dark:bg-[#0D0D0D] border border-[#F0F0F0] dark:border-[#1A1A1A] rounded-[40px] p-8 shadow-[0_20px_50px_rgba(0,0,0,0.03)] space-y-10 transition-colors duration-500">
             <div className="space-y-4">
               <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">Accent Palette</label>
               <div className="flex flex-wrap gap-3">
@@ -124,7 +131,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     key={color} 
                     onClick={() => onUpdateVisuals({ accentColor: color, ringColor: color })} 
                     style={{ backgroundColor: color }} 
-                    className={`w-9 h-9 rounded-full border-2 transition-all active:scale-90 ${state.visuals.accentColor === color ? 'border-black ring-4 ring-zinc-50' : 'border-zinc-100'}`} 
+                    className={`w-9 h-9 rounded-full border-2 transition-all active:scale-90 ${state.visuals.accentColor === color ? 'border-black dark:border-white ring-4 ring-zinc-50 dark:ring-zinc-900' : 'border-zinc-100 dark:border-[#262626]'}`} 
                   />
                 ))}
               </div>
@@ -136,11 +143,11 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <select 
                   value={state.visuals.font} 
                   onChange={(e) => onUpdateVisuals({ font: e.target.value as FontOption })}
-                  className="w-full h-[56px] bg-[#F8F8F8] border border-[#F0F0F0] rounded-2xl px-6 text-base font-semibold outline-none focus:border-black transition-all appearance-none"
+                  className="w-full h-[56px] bg-[#F8F8F8] dark:bg-[#1A1A1A] border border-[#F0F0F0] dark:border-[#262626] rounded-2xl px-6 text-base font-semibold outline-none focus:border-black dark:focus:border-white transition-all appearance-none dark:text-white"
                 >
                   {FONTS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
                 </select>
-                <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none opacity-30">
+                <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none opacity-30 dark:text-white">
                   <ALargeSmall size={18} />
                 </div>
               </div>
@@ -151,25 +158,25 @@ const Sidebar: React.FC<SidebarProps> = ({
         {/* Temporal Card */}
         <section className="space-y-6">
           <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.4em]">Temporal Metrics</label>
-          <div className="bg-[#F8F8F8] border border-[#F0F0F0] rounded-[40px] p-8 space-y-8">
+          <div className="bg-[#F8F8F8] dark:bg-[#141414] border border-[#F0F0F0] dark:border-[#262626] rounded-[40px] p-8 space-y-8 transition-colors duration-500">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-3">
                 <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">Origin</label>
-                <input type="number" value={state.sequence.start} onChange={(e) => onUpdateSequence({ start: parseInt(e.target.value) || 0 })} className="w-full h-[56px] bg-white border border-[#F0F0F0] rounded-2xl px-6 text-base font-bold text-center" />
+                <input type="number" value={state.sequence.start} onChange={(e) => onUpdateSequence({ start: parseInt(e.target.value) || 0 })} className="w-full h-[56px] bg-white dark:bg-[#0A0A0A] border border-[#F0F0F0] dark:border-[#262626] rounded-2xl px-6 text-base font-bold text-center dark:text-white" />
               </div>
               <div className="space-y-3">
                 <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">Target</label>
-                <input type="number" value={state.sequence.end} onChange={(e) => onUpdateSequence({ end: parseInt(e.target.value) || 0 })} className="w-full h-[56px] bg-white border border-[#F0F0F0] rounded-2xl px-6 text-base font-bold text-center" />
+                <input type="number" value={state.sequence.end} onChange={(e) => onUpdateSequence({ end: parseInt(e.target.value) || 0 })} className="w-full h-[56px] bg-white dark:bg-[#0A0A0A] border border-[#F0F0F0] dark:border-[#262626] rounded-2xl px-6 text-base font-bold text-center dark:text-white" />
               </div>
             </div>
             <div className="space-y-3">
               <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">Duration Seconds</label>
-              <input type="number" step="0.5" value={state.sequence.duration} onChange={(e) => onUpdateSequence({ duration: parseFloat(e.target.value) || 1 })} className="w-full h-[56px] bg-white border border-[#F0F0F0] rounded-2xl px-6 text-base font-black text-black text-center" />
+              <input type="number" step="0.5" value={state.sequence.duration} onChange={(e) => onUpdateSequence({ duration: parseFloat(e.target.value) || 1 })} className="w-full h-[56px] bg-white dark:bg-[#0A0A0A] border border-[#F0F0F0] dark:border-[#262626] rounded-2xl px-6 text-base font-black text-black dark:text-white text-center" />
             </div>
           </div>
         </section>
 
-        {/* Layer Selector - High Ergonomics */}
+        {/* Layer Selector */}
         <section className="space-y-6">
           <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.4em]">Active Components</label>
           <div className="flex gap-3 overflow-x-auto pb-4 -mx-2 px-2 no-scrollbar">
@@ -183,7 +190,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               <button
                 key={el.id}
                 onClick={() => onSelectElement(el.id as any)}
-                className={`flex-shrink-0 flex flex-col items-center justify-center gap-3 w-20 h-24 rounded-[28px] border transition-all active:scale-95 ${selected === el.id ? 'bg-black border-black text-white shadow-xl' : 'bg-white border-[#F0F0F0] text-zinc-400'}`}
+                className={`flex-shrink-0 flex flex-col items-center justify-center gap-3 w-20 h-24 rounded-[28px] border transition-all active:scale-95 ${selected === el.id ? 'bg-black dark:bg-white border-black dark:border-white text-white dark:text-black shadow-xl' : 'bg-white dark:bg-[#0D0D0D] border-[#F0F0F0] dark:border-[#262626] text-zinc-400'}`}
               >
                 <el.icon size={22} />
                 <span className="text-[9px] font-black uppercase tracking-[0.2em]">{el.label}</span>
@@ -194,15 +201,15 @@ const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Contextual Editor */}
         {selected && currentTransform && (
-          <section className="bg-white border border-[#F0F0F0] rounded-[40px] p-8 shadow-2xl animate-in fade-in slide-in-from-bottom-6 duration-700">
+          <section className="bg-white dark:bg-[#0D0D0D] border border-[#F0F0F0] dark:border-[#1A1A1A] rounded-[40px] p-8 shadow-2xl animate-in fade-in slide-in-from-bottom-6 duration-700">
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-3">
-                <Settings2 size={16} className="text-black" />
-                <span className="text-[11px] font-black uppercase tracking-[0.4em] leading-[0.9]">{selected}</span>
+                <Settings2 size={16} className="text-black dark:text-white" />
+                <span className="text-[11px] font-black uppercase tracking-[0.4em] leading-[0.9] dark:text-white">{selected}</span>
               </div>
               <button 
                 onClick={() => onUpdateVisibility({ [`show${selected.charAt(0).toUpperCase() + selected.slice(1)}` as keyof VisibilityConfig]: !state.visibility[`show${selected.charAt(0).toUpperCase() + selected.slice(1)}` as keyof VisibilityConfig] })} 
-                className={`h-10 px-5 rounded-full text-[10px] font-bold uppercase transition-all active:scale-95 ${state.visibility[`show${selected.charAt(0).toUpperCase() + selected.slice(1)}` as keyof VisibilityConfig] ? 'bg-[#F8F8F8] text-zinc-500' : 'bg-black text-white'}`}
+                className={`h-10 px-5 rounded-full text-[10px] font-bold uppercase transition-all active:scale-95 ${state.visibility[`show${selected.charAt(0).toUpperCase() + selected.slice(1)}` as keyof VisibilityConfig] ? 'bg-[#F8F8F8] dark:bg-[#1A1A1A] text-zinc-500 dark:text-zinc-400' : 'bg-black dark:bg-white text-white dark:text-black'}`}
               >
                 {state.visibility[`show${selected.charAt(0).toUpperCase() + selected.slice(1)}` as keyof VisibilityConfig] ? 'Visible' : 'Hidden'}
               </button>
@@ -213,7 +220,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">Ring Stroke</label>
-                    <span className="text-[11px] font-mono font-bold">{state.visuals.ringThickness}px</span>
+                    <span className="text-[11px] font-mono font-bold dark:text-white">{state.visuals.ringThickness}px</span>
                   </div>
                   <input type="range" min="1" max="40" step="1" value={state.visuals.ringThickness} onChange={(e) => onUpdateVisuals({ ringThickness: parseInt(e.target.value) })} className="w-full" />
                 </div>
@@ -222,7 +229,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">Spatial Scale</label>
-                  <span className="text-[11px] font-mono font-bold">{Math.round(currentTransform.scale * 100)}%</span>
+                  <span className="text-[11px] font-mono font-bold dark:text-white">{Math.round(currentTransform.scale * 100)}%</span>
                 </div>
                 <input type="range" min="0.1" max="5" step="0.01" value={currentTransform.scale} onChange={(e) => onUpdateTransform(selected, { scale: parseFloat(e.target.value) })} className="w-full" />
               </div>
@@ -230,11 +237,11 @@ const Sidebar: React.FC<SidebarProps> = ({
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-[0.3em]">X Point</label>
-                  <input type="number" value={currentTransform.x} onChange={(e) => onUpdateTransform(selected, { x: parseInt(e.target.value) || 0 })} className="w-full h-[56px] bg-[#F8F8F8] border border-[#F0F0F0] rounded-2xl px-5 text-base font-bold text-center" />
+                  <input type="number" value={currentTransform.x} onChange={(e) => onUpdateTransform(selected, { x: parseInt(e.target.value) || 0 })} className="w-full h-[56px] bg-[#F8F8F8] dark:bg-[#1A1A1A] border border-[#F0F0F0] dark:border-[#262626] rounded-2xl px-5 text-base font-bold text-center dark:text-white" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-[0.3em]">Y Point</label>
-                  <input type="number" value={currentTransform.y} onChange={(e) => onUpdateTransform(selected, { y: parseInt(e.target.value) || 0 })} className="w-full h-[56px] bg-[#F8F8F8] border border-[#F0F0F0] rounded-2xl px-5 text-base font-bold text-center" />
+                  <input type="number" value={currentTransform.y} onChange={(e) => onUpdateTransform(selected, { y: parseInt(e.target.value) || 0 })} className="w-full h-[56px] bg-[#F8F8F8] dark:bg-[#1A1A1A] border border-[#F0F0F0] dark:border-[#262626] rounded-2xl px-5 text-base font-bold text-center dark:text-white" />
                 </div>
               </div>
 
@@ -242,15 +249,15 @@ const Sidebar: React.FC<SidebarProps> = ({
               <div className="space-y-3">
                 <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Alignment Tools</label>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="flex bg-[#F8F8F8] p-1.5 rounded-2xl">
-                    <button onClick={() => handleAlign('h', 'start')} className="flex-1 h-12 flex justify-center items-center text-zinc-400 hover:text-black active:scale-95 transition-all"><AlignLeft size={20} /></button>
-                    <button onClick={() => handleAlign('h', 'center')} className="flex-1 h-12 flex justify-center items-center text-zinc-400 hover:text-black active:scale-95 transition-all"><AlignCenter size={20} /></button>
-                    <button onClick={() => handleAlign('h', 'end')} className="flex-1 h-12 flex justify-center items-center text-zinc-400 hover:text-black active:scale-95 transition-all"><AlignRight size={20} /></button>
+                  <div className="flex bg-[#F8F8F8] dark:bg-[#1A1A1A] p-1.5 rounded-2xl">
+                    <button onClick={() => handleAlign('h', 'start')} className="flex-1 h-12 flex justify-center items-center text-zinc-400 hover:text-black dark:hover:text-white active:scale-95 transition-all"><AlignLeft size={20} /></button>
+                    <button onClick={() => handleAlign('h', 'center')} className="flex-1 h-12 flex justify-center items-center text-zinc-400 hover:text-black dark:hover:text-white active:scale-95 transition-all"><AlignCenter size={20} /></button>
+                    <button onClick={() => handleAlign('h', 'end')} className="flex-1 h-12 flex justify-center items-center text-zinc-400 hover:text-black dark:hover:text-white active:scale-95 transition-all"><AlignRight size={20} /></button>
                   </div>
-                  <div className="flex bg-[#F8F8F8] p-1.5 rounded-2xl">
-                    <button onClick={() => handleAlign('v', 'start')} className="flex-1 h-12 flex justify-center items-center text-zinc-400 hover:text-black active:scale-95 transition-all"><AlignStartVertical size={20} /></button>
-                    <button onClick={() => handleAlign('v', 'center')} className="flex-1 h-12 flex justify-center items-center text-zinc-400 hover:text-black active:scale-95 transition-all"><AlignCenterVertical size={20} /></button>
-                    <button onClick={() => handleAlign('v', 'end')} className="flex-1 h-12 flex justify-center items-center text-zinc-400 hover:text-black active:scale-95 transition-all"><AlignEndVertical size={20} /></button>
+                  <div className="flex bg-[#F8F8F8] dark:bg-[#1A1A1A] p-1.5 rounded-2xl">
+                    <button onClick={() => handleAlign('v', 'start')} className="flex-1 h-12 flex justify-center items-center text-zinc-400 hover:text-black dark:hover:text-white active:scale-95 transition-all"><AlignStartVertical size={20} /></button>
+                    <button onClick={() => handleAlign('v', 'center')} className="flex-1 h-12 flex justify-center items-center text-zinc-400 hover:text-black dark:hover:text-white active:scale-95 transition-all"><AlignCenterVertical size={20} /></button>
+                    <button onClick={() => handleAlign('v', 'end')} className="flex-1 h-12 flex justify-center items-center text-zinc-400 hover:text-black dark:hover:text-white active:scale-95 transition-all"><AlignEndVertical size={20} /></button>
                   </div>
                 </div>
               </div>
@@ -260,21 +267,21 @@ const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Primary Bottom Actions - Ergonomic Sticky Bar */}
-      <div className="fixed bottom-0 left-0 lg:absolute w-full p-6 lg:p-8 bg-white/80 backdrop-blur-xl border-t border-[#F0F0F0] space-y-4 z-40">
+      <div className="fixed bottom-0 left-0 lg:absolute w-full p-6 lg:p-8 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-t border-[#F0F0F0] dark:border-[#1A1A1A] space-y-4 z-40">
         <div className="flex gap-4">
           <button 
             onClick={onPreview} 
             disabled={state.isExporting}
-            className="flex-1 h-[56px] lg:h-[64px] bg-[#F8F8F8] hover:bg-zinc-100 text-black font-bold rounded-2xl flex items-center justify-center gap-3 transition-all active:scale-95 text-[11px] uppercase tracking-[0.4em] border border-[#F0F0F0]"
+            className="flex-1 h-[56px] lg:h-[64px] bg-[#F8F8F8] dark:bg-[#1A1A1A] hover:bg-zinc-100 dark:hover:bg-[#262626] text-black dark:text-white font-bold rounded-2xl flex items-center justify-center gap-3 transition-all active:scale-95 text-[11px] uppercase tracking-[0.4em] border border-[#F0F0F0] dark:border-[#262626]"
           >
-            <Play size={18} fill="black" /> Preview
+            <Play size={18} fill={isDark ? "white" : "black"} /> Preview
           </button>
           <button 
             onClick={onExport} 
             disabled={state.isExporting}
-            className="flex-[2] h-[56px] lg:h-[64px] bg-black text-white font-bold rounded-2xl flex items-center justify-center gap-4 shadow-[0_20px_40px_rgba(0,0,0,0.15)] hover:bg-zinc-900 transition-all active:scale-95 text-[12px] uppercase tracking-[0.4em]"
+            className="flex-[2] h-[56px] lg:h-[64px] bg-black dark:bg-white text-white dark:text-black font-bold rounded-2xl flex items-center justify-center gap-4 shadow-[0_20px_40px_rgba(0,0,0,0.15)] hover:bg-zinc-900 dark:hover:bg-zinc-100 transition-all active:scale-95 text-[12px] uppercase tracking-[0.4em]"
           >
-            {state.isExporting ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Download size={20} />} 
+            {state.isExporting ? <div className="w-5 h-5 border-2 border-white/30 dark:border-black/30 border-t-white dark:border-t-black rounded-full animate-spin" /> : <Download size={20} />} 
             {state.isExporting ? 'Extracting' : 'Export Motion'}
           </button>
         </div>

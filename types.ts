@@ -1,4 +1,10 @@
-export type FontOption = "'Bebas Neue', sans-serif" | "'Oswald', sans-serif" | "'Montserrat', sans-serif" | "'Roboto Mono', monospace";
+
+export type FontOption = 
+  | "'Plus Jakarta Sans', sans-serif" 
+  | "'Bebas Neue', sans-serif" 
+  | "'Oswald', sans-serif" 
+  | "'Montserrat', sans-serif" 
+  | "'Roboto Mono', monospace";
 
 export interface ElementTransform {
   x: number;
@@ -29,6 +35,7 @@ export interface VisibilityConfig {
 }
 
 export interface VisualConfig {
+  theme: 'light' | 'dark';
   accentColor: string;
   ringColor: string;
   font: FontOption;

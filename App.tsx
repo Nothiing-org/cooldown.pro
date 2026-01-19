@@ -3,7 +3,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import PreviewStage from './components/PreviewStage';
 import { AppState, ElementTransform, ExportSettings } from './types';
-import { Menu, X, Dot } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 
 const HISTORY_LIMIT = 50;
 
@@ -15,9 +15,10 @@ const App: React.FC = () => {
       duration: 5,
     },
     visuals: {
+      theme: 'light',
       accentColor: '#007AFF',
       ringColor: '#007AFF',
-      font: "'Plus Jakarta Sans', sans-serif" as any, 
+      font: "'Plus Jakarta Sans', sans-serif", 
       glow: true,
       sound: true,
       backgroundStyle: 'solid',
@@ -217,22 +218,20 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-[100dvh] w-screen overflow-hidden bg-white text-black relative">
-      {/* Mobile Top Bar - Thumb Friendly Trigger */}
-      <div className="lg:hidden flex items-center justify-between px-6 h-20 bg-white border-b border-[#F0F0F0] z-50">
+    <div className={`flex flex-col lg:flex-row h-[100dvh] w-screen overflow-hidden transition-colors duration-500 ${state.visuals.theme === 'dark' ? 'dark bg-black text-white' : 'bg-white text-black'} relative`}>
+      <div className="lg:hidden flex items-center justify-between px-6 h-20 bg-white dark:bg-black border-b border-[#F0F0F0] dark:border-[#262626] z-50">
         <div className="flex items-center">
-          <div className="w-2.5 h-2.5 bg-black rounded-full mr-2" />
+          <div className="w-2.5 h-2.5 bg-black dark:bg-white rounded-full mr-2" />
           <span className="font-bold text-lg tracking-tighter">llumina</span>
         </div>
         <button 
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="h-12 w-12 flex items-center justify-center bg-[#F8F8F8] rounded-2xl active:scale-95 transition-all"
+          className="h-12 w-12 flex items-center justify-center bg-[#F8F8F8] dark:bg-[#1A1A1A] rounded-2xl active:scale-95 transition-all"
         >
           {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
 
-      {/* Sidebar - Desktop fixed / Mobile slide-over */}
       <div className={`fixed inset-0 lg:relative lg:inset-auto z-40 transform transition-transform duration-500 lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <Sidebar 
           state={state} 
@@ -252,13 +251,12 @@ const App: React.FC = () => {
         />
         <div 
           onClick={() => setIsSidebarOpen(false)}
-          className="lg:hidden absolute inset-0 bg-black/5 backdrop-blur-sm -z-10 pointer-events-auto"
+          className="lg:hidden absolute inset-0 bg-black/5 dark:bg-white/5 backdrop-blur-sm -z-10 pointer-events-auto"
           style={{ width: '100vw', transform: 'translateX(420px)' }}
         />
       </div>
 
-      {/* Main Preview */}
-      <main className="flex-1 relative bg-[#FAFAFA] overflow-hidden">
+      <main className="flex-1 relative bg-[#FAFAFA] dark:bg-[#0A0A0A] overflow-hidden">
         <PreviewStage state={state} onSelectElement={(id) => setState(s => ({ ...s, selectedElement: id }))} />
       </main>
     </div>

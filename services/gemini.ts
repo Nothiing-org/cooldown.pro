@@ -2,11 +2,17 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { AIThemeSuggestion } from "../types";
 
-// Fixed: Always use direct process.env.API_KEY for initialization without fallbacks
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
 export const generateThemeFromVibe = async (vibe: string): Promise<AIThemeSuggestion> => {
-  // Fixed: Ensure ai.models.generateContent is called with correct parameters and model
+  // Ensure we safely access the key only when the function is called
+  const apiKey = typeof process !== 'undefined' ? process.env.API_KEY : '';
+  
+  if (!apiKey) {
+    console.error("API_KEY is not defined in the environment.");
+    throw new Error("Missing API Key configuration.");
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
+
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
     contents: `Generate a visual theme for a countdown video based on this vibe: "${vibe}". Return only JSON.`,
@@ -18,7 +24,13 @@ export const generateThemeFromVibe = async (vibe: string): Promise<AIThemeSugges
           accentColor: { type: Type.STRING, description: "Hex color code" },
           font: { 
             type: Type.STRING, 
-            enum: ["'Bebas Neue', sans-serif", "'Oswald', sans-serif", "'Montserrat', sans-serif", "'Roboto Mono', monospace"] 
+            enum: [
+              "'Plus Jakarta Sans', sans-serif",
+              "'Bebas Neue', sans-serif", 
+              "'Oswald', sans-serif", 
+              "'Montserrat', sans-serif", 
+              "'Roboto Mono', monospace"
+            ] 
           },
           backgroundStyle: { 
             type: Type.STRING, 
@@ -32,7 +44,6 @@ export const generateThemeFromVibe = async (vibe: string): Promise<AIThemeSugges
     }
   });
 
-  // Fixed: response.text is a property getter, not a function
   const text = response.text;
   return JSON.parse(text || '{}') as AIThemeSuggestion;
 };
